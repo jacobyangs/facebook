@@ -13,8 +13,14 @@ class FacebookPhotoItems(Item):
 class CrawlPhoto(FacebookLogin):
     name = 'fbphtot'
     timelint_photo = None
+    id = None
+    links = []
+    def __init__(self):
+        self.id = id
+
     def after_login(self, response):
         yield Request('https://m.facebook.com/RobertScoble/photos',callback=self.parse_item)
+        # yield Request('https://m.facebook.com/%s/photos'%self.id,callback=self.parse_item)
     def parse_item(self,response):
         # print response.body
         urls = response.xpath('//span').extract()
@@ -38,6 +44,8 @@ class CrawlPhoto(FacebookLogin):
         photo_url = response.xpath('//div[@style=\'text-align:center;\']/img/@src').extract()[0]
         item['photo_links'] = photo_url
         yield item
+    def getPhotoLinks(self):
+        return self.links
     def wirtefile(self,str):
         with open('temp2.html','w') as file:
             file.write(str)
