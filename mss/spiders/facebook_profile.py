@@ -8,6 +8,7 @@ from facebook_login import FacebookLogin
 
 
 class FacebookItems(Item):
+    url = Field()
     name = Field()
     work = Field()
     education = Field()
@@ -20,33 +21,47 @@ class FacebookItems(Item):
     quote = Field()
     nicknames = Field()
     relationship = Field()
+    image_urls = Field()
+    link = Field()
 
 class FacebookProfile(FacebookLogin):
+    download_delay = 2
     name = "fb"
-    start_urls = ["https://m.facebook.com/plok74122?v=info", "https://m.facebook.com/bear.black.12?v=info",
-                  "https://m.facebook.com/tabaco.wang?v=info",'https://m.facebook.com/RobertScoble?v=info']
+    start_ids = ["plok74122", "bear.black.12","tabaco.wang","chaolin.chang.q","ashien.liu","liang.kevin.92","bingheng.tsai.9","psppupu",
+                  'cscgbakery',"hc.shiao.l","asusisbad","benjamin","franklin",'RobertScoble']
+                  # "https://m.facebook.com/tabaco.wang?v=info",'https://m.facebook.com/RobertScoble?v=info']
 
     def after_login(self, response):
-        for url in self.start_urls:
+        for url in self.start_ids:
+            url = "https://m.facebook.com/%s?v=info" %url
             yield Request(url, callback=self.parse_profile)
 
     def parse_profile(self, response):
         item = FacebookItems()
-        item["name"] = "".join(response.css('#root strong *::text').extract())
-
-        item["work"] = self.parse_info_has_image(response, response.css('#work'))
-        item["education"] = self.parse_info_has_image(response, response.css('#education'))
-        item["family"] = self.parse_info_has_image(response, response.css('#family'))
-
-        item["address"] = self.parse_info_has_table(response.css('#living'))
-        item["contact_info"] = self.parse_info_has_table(response.css('#contact-info'))
-        item["basic_info"] = self.parse_info_has_table(response.css('#basic-info'))
-        item["nicknames"] = self.parse_info_has_table(response.css('#nicknames'))
-
-        item["skills"] = self.parse_info_text_only(response.css('#skills'))
-        item["bio"] = self.parse_info_text_only(response.css('#bio'))
-        item["quote"] = self.parse_info_text_only(response.css('#quote'))
-        item["relationship"] = self.parse_info_text_only(response.css('#relationship'))
+        item['url'] = response.url
+        # item["name"] = "".join(response.css('#root strong *::text').extract())
+        #
+        # item["work"] = self.parse_info_has_image(response, response.css('#work'))
+        # item["education"] = self.parse_info_has_image(response, response.css('#education'))
+        # item["family"] = self.parse_info_has_image(response, response.css('#family'))
+        #
+        # item["address"] = self.parse_info_has_table(response.css('#living'))
+        # item["contact_info"] = self.parse_info_has_table(response.css('#contact-info'))
+        # item["basic_info"] = self.parse_info_has_table(response.css('#basic-info'))
+        # item["nicknames"] = self.parse_info_has_table(response.css('#nicknames'))
+        #
+        # item["skills"] = self.parse_info_text_only(response.css('#skills'))
+        # item["bio"] = self.parse_info_text_only(response.css('#bio'))
+        # item["quote"] = self.parse_info_text_only(response.css('#quote'))
+        # item["relationship"] = self.parse_info_text_only(response.css('#relationship'))
+        # item['image_urls'] = ['http://img5.cache.netease.com/photo/0001/2016-09-13/C0QTSIEB3R710001.jpg']
+        # https://m.facebook.com/RobertScoble/photos
+        request1 = Request('https://www.facebook.com/RobertScoble/photos',callback=self.parse_image_url,dont_filter=True)
+        request1.meta['item'] = item
+        return request1
+    def parse_image_url(self,respose):
+        item = respose.meta['item']
+        item['link'] = respose.body
         return item
 
     def parse_info_has_image(self, response, css_path):
