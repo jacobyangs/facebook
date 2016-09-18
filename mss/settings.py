@@ -27,5 +27,5 @@ DOWNLOADER_MIDDLEWARES = {
 
 ITEM_PIPELINES = {
     'mss.pipelines.JSONPipeline': 300,
-    # 'mss.pipelines.MyImagesPipeline': 1,
+    'mss.pipelines.MyOwenImageDownload': 1,
 }
